@@ -1,0 +1,47 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(uuid())
+  username      String    @unique
+  email         String    @unique
+  passwordHash  String
+  chips         Int       @default(1000)
+  totalWinnings Int       @default(0)
+  gamesPlayed   Int       @default(0)
+  gamesWon      Int       @default(0)
+  avatarUrl     String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  refreshTokens RefreshToken[]
+  rooms         Room[]         @relation("CreatedRooms")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model Room {
+  id          String   @id @default(uuid())
+  inviteCode  String   @unique
+  name        String
+  maxPlayers  Int      @default(5)
+  minBet      Int      @default(10)
+  maxBet      Int      @default(500)
+  isActive    Boolean  @default(true)
+  createdById String
+  createdBy   User     @relation("CreatedRooms", fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
+}
