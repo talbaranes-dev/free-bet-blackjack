@@ -15,16 +15,33 @@ export function getSocket(): Socket {
     reconnection: true,
     reconnectionAttempts: 10,
     reconnectionDelay: 1000,
-    transports: ['websocket', 'polling'],
+    transports: ['polling', 'websocket'],
   });
 
   return socket;
 }
 
 export function connectSocket(): Socket {
-  const s = getSocket();
-  if (!s.connected) s.connect();
-  return s;
+  // Always recreate socket to get fresh token
+  if (socket) {
+    socket.disconnect();
+    socket = null;
+  }
+
+  const serverUrl = import.meta.env.VITE_SERVER_URL || '';
+  const token = useAuthStore.getState().accessToken;
+
+  socket = io(serverUrl, {
+    auth: { token },
+    autoConnect: false,
+    reconnection: true,
+    reconnectionAttempts: 10,
+    reconnectionDelay: 1000,
+    transports: ['polling', 'websocket'],
+  });
+
+  socket.connect();
+  return socket;
 }
 
 export function disconnectSocket() {
