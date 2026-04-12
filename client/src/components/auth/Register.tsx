@@ -5,7 +5,6 @@ import api from '../../services/api';
 
 export default function Register() {
   const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -17,7 +16,7 @@ export default function Register() {
     setError('');
     setLoading(true);
     try {
-      const { data } = await api.post('/auth/register', { username, email, password });
+      const { data } = await api.post('/auth/register', { username, password });
       setAuth(data.user, data.accessToken, data.refreshToken);
       navigate('/');
     } catch (err: any) {
@@ -48,17 +47,8 @@ export default function Register() {
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             required
-            minLength={3}
+            minLength={2}
             maxLength={20}
-            className="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:border-amber-400"
-          />
-
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
             className="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:border-amber-400"
           />
 

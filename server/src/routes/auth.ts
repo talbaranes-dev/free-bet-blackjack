@@ -19,35 +19,30 @@ function generateTokens(userId: string) {
 // Register
 router.post('/register', async (req, res) => {
   try {
-    const { username, email, password } = req.body;
+    const { username, password } = req.body;
 
-    if (!username || !email || !password) {
-      return res.status(400).json({ message: 'All fields are required' });
+    if (!username || !password) {
+      return res.status(400).json({ message: 'Username and password are required' });
     }
     if (password.length < 6) {
       return res.status(400).json({ message: 'Password must be at least 6 characters' });
     }
-    if (username.length < 3 || username.length > 20) {
-      return res.status(400).json({ message: 'Username must be 3-20 characters' });
+    if (username.length < 2 || username.length > 20) {
+      return res.status(400).json({ message: 'Username must be 2-20 characters' });
     }
 
-    const existing = await prisma.user.findFirst({
-      where: { OR: [{ email }, { username }] },
-    });
+    const existing = await prisma.user.findUnique({ where: { username } });
     if (existing) {
-      return res.status(409).json({
-        message: existing.email === email ? 'Email already registered' : 'Username taken',
-      });
+      return res.status(409).json({ message: 'Username taken' });
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
     const user = await prisma.user.create({
-      data: { username, email, passwordHash },
+      data: { username, email: `${username}@freebet.local`, passwordHash },
     });
 
     const { accessToken, refreshToken } = generateTokens(user.id);
 
-    // Store refresh token
     await prisma.refreshToken.create({
       data: {
         token: refreshToken,
@@ -60,7 +55,6 @@ router.post('/register', async (req, res) => {
       user: {
         id: user.id,
         username: user.username,
-        email: user.email,
         chips: user.chips,
         avatarUrl: user.avatarUrl,
       },
@@ -76,16 +70,16 @@ router.post('/register', async (req, res) => {
 // Login
 router.post('/login', async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { username, password } = req.body;
 
-    const user = await prisma.user.findUnique({ where: { email } });
+    const user = await prisma.user.findUnique({ where: { username } });
     if (!user) {
-      return res.status(401).json({ message: 'Invalid email or password' });
+      return res.status(401).json({ message: 'Invalid username or password' });
     }
 
     const valid = await bcrypt.compare(password, user.passwordHash);
     if (!valid) {
-      return res.status(401).json({ message: 'Invalid email or password' });
+      return res.status(401).json({ message: 'Invalid username or password' });
     }
 
     const { accessToken, refreshToken } = generateTokens(user.id);
@@ -102,7 +96,6 @@ router.post('/login', async (req, res) => {
       user: {
         id: user.id,
         username: user.username,
-        email: user.email,
         chips: user.chips,
         avatarUrl: user.avatarUrl,
       },
@@ -125,16 +118,13 @@ router.post('/refresh', async (req, res) => {
 
     const payload = jwt.verify(refreshToken, env.JWT_REFRESH_SECRET) as { userId: string };
 
-    // Check token exists in DB
     const stored = await prisma.refreshToken.findUnique({ where: { token: refreshToken } });
     if (!stored || stored.expiresAt < new Date()) {
       return res.status(401).json({ message: 'Invalid refresh token' });
     }
 
-    // Delete old token
     await prisma.refreshToken.delete({ where: { id: stored.id } });
 
-    // Generate new tokens
     const tokens = generateTokens(payload.userId);
 
     await prisma.refreshToken.create({
