@@ -32,6 +32,16 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok' });
 });
 
+// Admin: reset all users (temporary)
+app.post('/api/admin/reset', async (_req, res) => {
+  const { PrismaClient } = require('@prisma/client');
+  const prisma = new PrismaClient();
+  await prisma.refreshToken.deleteMany();
+  await prisma.room.deleteMany();
+  await prisma.user.deleteMany();
+  res.json({ message: 'All users deleted' });
+});
+
 // Socket.IO
 setupSocketIO(io);
 
