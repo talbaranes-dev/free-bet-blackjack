@@ -13,7 +13,7 @@ interface GameStoreState {
   setRoom: (roomId: string, inviteCode: string, name: string) => void;
   setSeats: (seats: (PlayerSeat | null)[]) => void;
   updateSeat: (index: number, seat: PlayerSeat | null) => void;
-  setGameState: (state: GameState | null) => void;
+  setGameState: (state: GameState | null | ((prev: GameState | null) => GameState | null)) => void;
   setAvailableActions: (actions: AvailableActions | null) => void;
   setMySeatIndex: (index: number | null) => void;
   updatePlayerHand: (seatIndex: number, hands: PlayerSeat['hands']) => void;
@@ -40,7 +40,10 @@ export const useGameStore = create<GameStoreState>((set) => ({
       return { seats };
     }),
 
-  setGameState: (gameState) => set({ gameState }),
+  setGameState: (gameState) =>
+    set((state) => ({
+      gameState: typeof gameState === 'function' ? gameState(state.gameState) : gameState,
+    })),
 
   setAvailableActions: (availableActions) => set({ availableActions }),
 
