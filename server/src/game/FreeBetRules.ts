@@ -1,4 +1,4 @@
-import type { Card, AvailableActions } from '../../../shared/types';
+import type { Card, AvailableActions } from '../../shared/types';
 import { HandEvaluator } from './HandEvaluator';
 
 export class FreeBetRules {

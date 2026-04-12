@@ -1,4 +1,4 @@
-import type { Card, HandValue } from '../../../shared/types';
+import type { Card, HandValue } from '../../shared/types';
 
 export class HandEvaluator {
   static cardValue(rank: string): number {

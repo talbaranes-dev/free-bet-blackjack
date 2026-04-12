@@ -1,7 +1,7 @@
 import { Server } from 'socket.io';
 import { PrismaClient } from '@prisma/client';
 import { AuthSocket } from '../../middleware/socketAuth';
-import { C2S, S2C } from '../../../../shared/events';
+import { C2S, S2C } from '../../../shared/events';
 import { GameManager } from '../gameManager';
 
 const prisma = new PrismaClient();

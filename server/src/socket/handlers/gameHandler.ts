@@ -1,8 +1,8 @@
 import { Server } from 'socket.io';
 import { AuthSocket } from '../../middleware/socketAuth';
-import { C2S, S2C } from '../../../../shared/events';
+import { C2S, S2C } from '../../../shared/events';
 import { getRooms } from './roomHandler';
-import type { PlayerAction } from '../../../../shared/types';
+import type { PlayerAction } from '../../../shared/types';
 
 export function setupGameHandler(io: Server, socket: AuthSocket) {
   const userId = socket.userId!;

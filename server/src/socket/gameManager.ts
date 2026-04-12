@@ -1,8 +1,8 @@
 import { Server } from 'socket.io';
 import { PrismaClient } from '@prisma/client';
 import { BlackjackEngine, GameEvent } from '../game/BlackjackEngine';
-import { S2C, C2S } from '../../../shared/events';
-import type { GameState, PlayerAction } from '../../../shared/types';
+import { S2C, C2S } from '../../shared/events';
+import type { GameState, PlayerAction } from '../../shared/types';
 
 const prisma = new PrismaClient();
 

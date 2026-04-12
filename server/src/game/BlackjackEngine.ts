@@ -11,7 +11,7 @@ import type {
   HandValue,
   PlayerAction,
   AvailableActions,
-} from '../../../shared/types';
+} from '../../shared/types';
 
 export interface EnginePlayer {
   seatIndex: number;
