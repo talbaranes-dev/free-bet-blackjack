@@ -5,7 +5,7 @@ import { useAuthStore } from '../../stores/authStore';
 import { getSocket } from '../../services/socket';
 import { C2S } from '@shared/events';
 import type { PlayerAction } from '@shared/types';
-import Dealer from './Dealer';
+import Dealer3D from './Dealer3D';
 import DealerHand from './DealerHand';
 import PlayerSeat from './PlayerSeat';
 import Hand from './Hand';
@@ -89,9 +89,8 @@ export default function Table() {
 
       {/* Dealer area */}
       <div className="flex-shrink-0 flex flex-col items-center">
-        <Dealer
+        <Dealer3D
           isDealing={gameState?.status === 'DEALING'}
-          isWaiting={!gameState || gameState.status === 'BETTING'}
           message={dealerMessage}
         />
         {/* Dealer cards */}
