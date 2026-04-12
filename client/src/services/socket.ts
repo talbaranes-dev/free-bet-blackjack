@@ -4,16 +4,20 @@ import { useAuthStore } from '../stores/authStore';
 let socket: Socket | null = null;
 
 export function getSocket(): Socket {
-  if (!socket) {
-    const serverUrl = import.meta.env.VITE_SERVER_URL || '/';
-    socket = io(serverUrl, {
-      auth: () => ({ token: useAuthStore.getState().accessToken }),
-      autoConnect: false,
-      reconnection: true,
-      reconnectionAttempts: 10,
-      reconnectionDelay: 1000,
-    });
-  }
+  if (socket) return socket;
+
+  const serverUrl = import.meta.env.VITE_SERVER_URL || '';
+  const token = useAuthStore.getState().accessToken;
+
+  socket = io(serverUrl, {
+    auth: { token },
+    autoConnect: false,
+    reconnection: true,
+    reconnectionAttempts: 10,
+    reconnectionDelay: 1000,
+    transports: ['websocket', 'polling'],
+  });
+
   return socket;
 }
 

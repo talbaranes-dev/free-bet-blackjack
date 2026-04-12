@@ -27,6 +27,11 @@ export default function GamePage() {
 
     socket.on('disconnect', () => setConnected(false));
 
+    socket.on('connect_error', (err) => {
+      console.error('Socket connect error:', err.message);
+      setError('Connection failed: ' + err.message);
+    });
+
     socket.on(S2C.ROOM_STATE, (state: RoomState) => {
       setRoom(state.id, state.inviteCode, state.name);
       setSeats(state.seats);
