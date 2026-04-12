@@ -41,7 +41,7 @@ export class FreeBetRules {
         double: false,
         split: false,
         surrender: false,
-        isFreeDOuble: false,
+        isFreeDouble: false,
         isFreeSplit: false,
       };
     }
@@ -69,7 +69,7 @@ export class FreeBetRules {
       double: canDouble && canAffordDouble,
       split: canSplit && canAffordSplit,
       surrender: canSurrender,
-      isFreeDOuble: freeDouble,
+      isFreeDouble: freeDouble,
       isFreeSplit: freeSplit,
     };
   }
@@ -86,6 +86,18 @@ export class FreeBetRules {
 
   /**
    * Calculate payout for a hand.
+   *
+   * Accounting model: `payout` is the total chips to credit this hand at resolution.
+   * The engine then computes `chipChange = totalPayout - player.bet` — `player.bet`
+   * represents the original placed stake that was never deducted from chips, so it
+   * must be returned-or-lost at settlement.
+   *
+   * - `hasRealStake=true`  : this hand holds player money (normal hand, or free
+   *                         double where the original stake is still in play).
+   * - `hasRealStake=false` : phantom hand created by a free split — casino owns it,
+   *                         no stake to return, only winnings flow to the player.
+   * - `freeBet=true` on a hand with `hasRealStake=true` means the casino matched
+   *   the doubled portion: on win, return stake + 2x winnings (bet * 3).
    */
   static calculatePayout(
     handBest: number,
@@ -94,8 +106,15 @@ export class FreeBetRules {
     isBlackjack: boolean,
     isBusted: boolean,
     dealerBusted: boolean,
-    isFreeBet: boolean
+    isFreeBet: boolean,
+    hasRealStake: boolean = true
   ): { result: 'WIN' | 'LOSS' | 'PUSH' | 'BLACKJACK_WIN'; payout: number } {
+    const winAmount = () => {
+      if (!hasRealStake) return bet; // phantom hand: only winnings flow
+      return isFreeBet ? bet * 3 : bet * 2; // real stake: stake + winnings (bet*3 if casino matched)
+    };
+    const pushAmount = hasRealStake ? bet : 0;
+
     // Player busted
     if (isBusted) {
       return { result: 'LOSS', payout: 0 };
@@ -106,8 +125,7 @@ export class FreeBetRules {
       if (isBlackjack) {
         return { result: 'BLACKJACK_WIN', payout: Math.floor(bet * 2.5) };
       }
-      // All other non-busted hands push
-      return { result: 'PUSH', payout: bet };
+      return { result: 'PUSH', payout: pushAmount };
     }
 
     // Dealer busts with 23+
@@ -115,9 +133,7 @@ export class FreeBetRules {
       if (isBlackjack) {
         return { result: 'BLACKJACK_WIN', payout: Math.floor(bet * 2.5) };
       }
-      // Free bet: only win the original bet amount, not the doubled amount
-      const winAmount = isFreeBet ? bet : bet * 2;
-      return { result: 'WIN', payout: winAmount };
+      return { result: 'WIN', payout: winAmount() };
     }
 
     // Player blackjack vs dealer non-blackjack
@@ -127,17 +143,16 @@ export class FreeBetRules {
 
     // Both blackjack
     if (isBlackjack && dealerBest === 21) {
-      return { result: 'PUSH', payout: bet };
+      return { result: 'PUSH', payout: pushAmount };
     }
 
     // Compare values
     if (handBest > dealerBest) {
-      const winAmount = isFreeBet ? bet : bet * 2;
-      return { result: 'WIN', payout: winAmount };
+      return { result: 'WIN', payout: winAmount() };
     }
 
     if (handBest === dealerBest) {
-      return { result: 'PUSH', payout: bet };
+      return { result: 'PUSH', payout: pushAmount };
     }
 
     return { result: 'LOSS', payout: 0 };

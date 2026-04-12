@@ -30,6 +30,7 @@ export interface GameHand {
   cards: Card[];
   bet: number;
   freeBet: boolean;
+  hasRealStake: boolean;
   status: HandStatus;
   result?: HandResult;
   payout: number;
@@ -80,7 +81,7 @@ export interface AvailableActions {
   double: boolean;
   split: boolean;
   surrender: boolean;
-  isFreeDOuble: boolean;
+  isFreeDouble: boolean;
   isFreeSplit: boolean;
 }
 

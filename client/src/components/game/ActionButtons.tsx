@@ -10,7 +10,7 @@ interface ActionButtonsProps {
 const buttonConfig: { action: PlayerAction; label: string; freeKey?: keyof AvailableActions; color: string }[] = [
   { action: 'hit', label: 'HIT', color: '#27ae60' },
   { action: 'stand', label: 'STAND', color: '#e74c3c' },
-  { action: 'double', label: 'DOUBLE', freeKey: 'isFreeDOuble', color: '#3498db' },
+  { action: 'double', label: 'DOUBLE', freeKey: 'isFreeDouble', color: '#3498db' },
   { action: 'split', label: 'SPLIT', freeKey: 'isFreeSplit', color: '#9b59b6' },
   { action: 'surrender', label: 'GIVE UP', color: '#7f8c8d' },
 ];

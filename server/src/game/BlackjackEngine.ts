@@ -116,6 +116,7 @@ export class BlackjackEngine {
             cards: [],
             bet: player.bet,
             freeBet: false,
+            hasRealStake: true,
             status: 'ACTIVE',
             payout: 0,
           });
@@ -250,6 +251,11 @@ export class BlackjackEngine {
       this.advanceTurn();
     } else if (value.best === 21) {
       hand.status = 'STOOD';
+      this.eventQueue.push({
+        type: 'HAND_STOOD',
+        seatIndex: player.seatIndex,
+        handIndex: this.state.currentHandIndex,
+      });
       this.advanceTurn();
     }
 
@@ -323,14 +329,17 @@ export class BlackjackEngine {
     const newCard1 = this.state.deck.draw(true);
     const newCard2 = this.state.deck.draw(true);
 
+    // Original hand retains the player's real stake. On a free split the
+    // casino covers the NEW hand only — it is a phantom hand (hasRealStake=false)
+    // and the original is still a normal stake hand.
     hand.cards = [card1, newCard1];
-    hand.freeBet = isFree;
 
     const newHand: GameHand = {
       id: uuid(),
       cards: [card2, newCard2],
-      bet: isFree ? hand.bet : hand.bet, // Same bet for split hand
-      freeBet: isFree,
+      bet: hand.bet,
+      freeBet: false,
+      hasRealStake: !isFree,
       status: 'ACTIVE',
       payout: 0,
       splitFrom: hand.id,
@@ -363,7 +372,9 @@ export class BlackjackEngine {
 
   private handleSurrender(player: EnginePlayer, hand: GameHand): boolean {
     hand.status = 'SURRENDERED';
-    hand.payout = Math.floor(hand.bet / 2);
+    // Normal hand: give back half the stake. Phantom (free-split) hand has no
+    // real stake, so surrender returns nothing.
+    hand.payout = hand.hasRealStake ? Math.floor(hand.bet / 2) : 0;
 
     this.eventQueue.push({
       type: 'HAND_SURRENDERED',
@@ -490,7 +501,8 @@ export class BlackjackEngine {
           hand.status === 'BLACKJACK',
           hand.status === 'BUSTED',
           dealerBusted,
-          hand.freeBet
+          hand.freeBet,
+          hand.hasRealStake
         );
 
         hand.result = result;
