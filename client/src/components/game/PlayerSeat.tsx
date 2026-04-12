@@ -15,7 +15,8 @@ export default function PlayerSeat({ seat, isCurrentTurn, isMe, seatIndex, onTak
     return (
       <button
         onClick={onTakeSeat}
-        className="w-16 h-16 rounded-full border-2 border-dashed border-white/20 flex items-center justify-center text-white/30 text-2xl transition-colors hover:border-white/40"
+        className="w-12 h-12 rounded-full border-2 border-dashed flex items-center justify-center text-lg transition-all active:scale-90"
+        style={{ borderColor: 'rgba(255,215,0,0.2)', color: 'rgba(255,215,0,0.3)' }}
       >
         +
       </button>
@@ -24,39 +25,49 @@ export default function PlayerSeat({ seat, isCurrentTurn, isMe, seatIndex, onTak
 
   return (
     <motion.div
-      className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-colors ${
-        isCurrentTurn ? 'bg-amber-500/20 ring-2 ring-amber-400' : ''
-      }`}
-      animate={isCurrentTurn ? { scale: [1, 1.02, 1] } : {}}
+      className="flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl transition-all min-w-[60px]"
+      style={isCurrentTurn ? {
+        backgroundColor: 'rgba(255,215,0,0.1)',
+        boxShadow: '0 0 15px rgba(255,215,0,0.2)',
+        border: '1px solid rgba(255,215,0,0.3)',
+      } : {}}
+      animate={isCurrentTurn ? { scale: [1, 1.03, 1] } : {}}
       transition={{ repeat: Infinity, duration: 1.5 }}
     >
       {/* Avatar */}
       <div
-        className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold"
-        style={{ backgroundColor: isMe ? '#ffd700' : 'rgba(255,255,255,0.2)', color: isMe ? '#000' : '#fff' }}
+        className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shadow-md"
+        style={{
+          background: isMe
+            ? 'linear-gradient(135deg, #ffd700, #ffb300)'
+            : 'linear-gradient(135deg, #34495e, #2c3e50)',
+          color: isMe ? '#000' : '#fff',
+          boxShadow: isCurrentTurn ? '0 0 10px rgba(255,215,0,0.5)' : '0 2px 5px rgba(0,0,0,0.3)',
+        }}
       >
         {seat.username.charAt(0).toUpperCase()}
       </div>
 
       {/* Name */}
-      <p className={`text-xs truncate max-w-[60px] ${isMe ? 'text-amber-400 font-bold' : 'text-gray-300'}`}>
+      <p className="text-[10px] truncate max-w-[55px]"
+        style={{ color: isMe ? '#ffd700' : 'rgba(255,255,255,0.7)' }}>
         {isMe ? 'You' : seat.username}
       </p>
 
-      {/* Hands (small for other players) */}
+      {/* Mini hands */}
       {!isMe && seat.hands.length > 0 && (
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-0.5">
           {seat.hands.map((hand, i) => (
             <Hand key={hand.id || i} hand={hand} small />
           ))}
         </div>
       )}
 
-      {/* Bet */}
+      {/* Bet chip */}
       {seat.currentBet > 0 && (
-        <div className="flex items-center gap-1">
-          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#ffd700' }} />
-          <span className="text-xs text-gray-300">{seat.currentBet}</span>
+        <div className="w-6 h-6 rounded-full flex items-center justify-center text-[8px] font-bold mt-0.5"
+          style={{ background: 'linear-gradient(135deg, #c41e3a, #a01830)', color: 'white', border: '1px solid #e74c3c' }}>
+          {seat.currentBet}
         </div>
       )}
     </motion.div>
