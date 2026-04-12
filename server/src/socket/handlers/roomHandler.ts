@@ -56,6 +56,12 @@ export function setupRoomHandler(io: Server, socket: AuthSocket) {
       socket.join(`room:${inviteCode}`);
       (socket as any).currentRoom = inviteCode;
 
+      // If user was previously seated (reconnect), update their socket ID
+      const existingSeat = room.seats.find((s) => s?.userId === userId);
+      if (existingSeat) {
+        existingSeat.socketId = socket.id;
+      }
+
       // Get user data
       const user = await prisma.user.findUnique({ where: { id: userId } });
       if (!user) return;

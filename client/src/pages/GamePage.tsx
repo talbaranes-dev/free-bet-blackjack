@@ -54,7 +54,12 @@ export default function GamePage() {
       }
     });
 
-    socket.on(S2C.ERROR, (msg: string) => setError(msg));
+    socket.on(S2C.ERROR, (msg: string) => {
+      console.warn('Game error:', msg);
+      // Don't show fatal error for seat/room issues - just log them
+      if (msg === 'Seat taken' || msg === 'Already seated') return;
+      setError(msg);
+    });
 
     return () => {
       socket.emit(C2S.LEAVE_ROOM);
