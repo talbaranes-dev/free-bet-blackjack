@@ -103,6 +103,90 @@ export default function GamePage() {
       }
     });
 
+    // Card drawn (HIT or DOUBLE)
+    socket.on(S2C.CARD_DRAWN, (data: { seatIndex: number; handIndex: number; card: any; value: any }) => {
+      const seats = useGameStore.getState().seats;
+      const seat = seats[data.seatIndex];
+      if (seat && seat.hands[data.handIndex]) {
+        const hands = [...seat.hands];
+        hands[data.handIndex] = { ...hands[data.handIndex], cards: [...hands[data.handIndex].cards, data.card] };
+        updateSeat(data.seatIndex, { ...seat, hands });
+      }
+    });
+
+    // Hand doubled
+    socket.on(S2C.HAND_DOUBLED, (data: { seatIndex: number; handIndex: number; card: any; value: any; freeBet: boolean }) => {
+      const seats = useGameStore.getState().seats;
+      const seat = seats[data.seatIndex];
+      if (seat && seat.hands[data.handIndex]) {
+        const hands = [...seat.hands];
+        hands[data.handIndex] = { ...hands[data.handIndex], cards: [...hands[data.handIndex].cards, data.card], freeBet: data.freeBet };
+        updateSeat(data.seatIndex, { ...seat, hands });
+      }
+    });
+
+    // Hand busted
+    socket.on(S2C.HAND_BUSTED, (data: { seatIndex: number; handIndex: number }) => {
+      const seats = useGameStore.getState().seats;
+      const seat = seats[data.seatIndex];
+      if (seat && seat.hands[data.handIndex]) {
+        const hands = [...seat.hands];
+        hands[data.handIndex] = { ...hands[data.handIndex], status: 'BUSTED' as const };
+        updateSeat(data.seatIndex, { ...seat, hands });
+      }
+    });
+
+    // Hand stood
+    socket.on(S2C.HAND_STOOD, (data: { seatIndex: number; handIndex: number }) => {
+      const seats = useGameStore.getState().seats;
+      const seat = seats[data.seatIndex];
+      if (seat && seat.hands[data.handIndex]) {
+        const hands = [...seat.hands];
+        hands[data.handIndex] = { ...hands[data.handIndex], status: 'STOOD' as const };
+        updateSeat(data.seatIndex, { ...seat, hands });
+      }
+    });
+
+    // Hand surrendered
+    socket.on(S2C.HAND_SURRENDERED, (data: { seatIndex: number; handIndex: number }) => {
+      const seats = useGameStore.getState().seats;
+      const seat = seats[data.seatIndex];
+      if (seat && seat.hands[data.handIndex]) {
+        const hands = [...seat.hands];
+        hands[data.handIndex] = { ...hands[data.handIndex], status: 'SURRENDERED' as const };
+        updateSeat(data.seatIndex, { ...seat, hands });
+      }
+    });
+
+    // Hand split
+    socket.on(S2C.HAND_SPLIT, (data: { seatIndex: number; hands: any[] }) => {
+      const seats = useGameStore.getState().seats;
+      const seat = seats[data.seatIndex];
+      if (seat) {
+        updateSeat(data.seatIndex, { ...seat, hands: data.hands });
+      }
+    });
+
+    // Bet placed
+    socket.on(S2C.BET_PLACED, (data: { seatIndex: number; amount: number }) => {
+      const seats = useGameStore.getState().seats;
+      const seat = seats[data.seatIndex];
+      if (seat) {
+        updateSeat(data.seatIndex, { ...seat, currentBet: data.amount });
+      }
+    });
+
+    // Hand result
+    socket.on(S2C.HAND_RESULT, (data: { seatIndex: number; handIndex: number; result: any; payout: number }) => {
+      const seats = useGameStore.getState().seats;
+      const seat = seats[data.seatIndex];
+      if (seat && seat.hands[data.handIndex]) {
+        const hands = [...seat.hands];
+        hands[data.handIndex] = { ...hands[data.handIndex], result: data.result, payout: data.payout };
+        updateSeat(data.seatIndex, { ...seat, hands });
+      }
+    });
+
     socket.on(S2C.DEALER_REVEAL, (data: { card: any; value: any }) => {
       setGameState((prev) => {
         if (!prev) return prev;
@@ -137,8 +221,11 @@ export default function GamePage() {
 
     socket.on(S2C.ERROR, (msg: string) => {
       console.warn('Game error:', msg);
-      if (msg === 'Seat taken' || msg === 'Already seated') return;
-      setError(msg);
+      // Don't kick from table for game errors - just log them
+      if (msg === 'Room not found' || msg === 'Failed to join room') {
+        setError(msg);
+      }
+      // All other errors (Seat taken, Already seated, Invalid action, Invalid bet) are non-fatal
     });
 
     return () => {
