@@ -18,7 +18,16 @@ export default function GamePage() {
   useEffect(() => {
     if (!inviteCode || !user) return;
 
-    const socket = connectSocket();
+    let socket: any = null;
+    let cancelled = false;
+
+    connectSocket().then((s) => {
+      if (cancelled) { s.disconnect(); return; }
+      socket = s;
+      setupSocketHandlers(s);
+    });
+
+    function setupSocketHandlers(socket: any) {
 
     socket.on('connect', () => {
       console.log('[SOCKET] Connected');
@@ -36,6 +45,7 @@ export default function GamePage() {
 
     socket.on('connect_error', (err) => {
       console.error('[SOCKET] Connect error:', err.message);
+      // Don't show error screen - socket will auto-retry
     });
 
     // Log ALL incoming events for debugging
@@ -239,8 +249,11 @@ export default function GamePage() {
       // All other errors (Seat taken, Already seated, Invalid action, Invalid bet) are non-fatal
     });
 
+    } // end setupSocketHandlers
+
     return () => {
-      socket.emit(C2S.LEAVE_ROOM);
+      cancelled = true;
+      if (socket) socket.emit(C2S.LEAVE_ROOM);
       disconnectSocket();
       reset();
     };
