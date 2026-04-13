@@ -108,12 +108,44 @@ export class GameManager {
     return success;
   }
 
-  private processEvents() {
+  private async processEvents() {
     const events = this.engine.flushEvents();
 
     for (const event of events) {
       this.broadcastEvent(event);
+
+      // Add delays for dramatic effect - like a real casino
+      switch (event.type) {
+        case 'CARDS_DEALT':
+          await this.delay(1500); // Pause after dealing
+          break;
+        case 'CARD_DRAWN':
+          await this.delay(600); // Brief pause after hit
+          break;
+        case 'HAND_DOUBLED':
+          await this.delay(800);
+          break;
+        case 'HAND_BUSTED':
+          await this.delay(1000);
+          break;
+        case 'DEALER_REVEAL':
+          await this.delay(1200); // Dramatic reveal
+          break;
+        case 'DEALER_DRAW':
+          await this.delay(1000); // Each dealer card
+          break;
+        case 'HAND_RESULT':
+          await this.delay(800); // Show each result
+          break;
+        case 'ROUND_COMPLETE':
+          await this.delay(3000); // Show results for 3 seconds before next round
+          break;
+      }
     }
+  }
+
+  private delay(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   private broadcastEvent(event: GameEvent) {
