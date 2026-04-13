@@ -22,8 +22,8 @@ interface CardProps {
 }
 
 export default function Card({ card, index = 0, small = false }: CardProps) {
-  const w = small ? 'w-9 h-13' : 'w-14 h-20';
-  const fontSize = small ? 'text-[10px]' : 'text-sm';
+  const w = small ? 'w-[52px] h-[74px]' : 'w-[72px] h-[104px]';
+  const fontSize = small ? 'text-xs' : 'text-base';
 
   if (!card.faceUp) {
     return (
@@ -60,18 +60,18 @@ export default function Card({ card, index = 0, small = false }: CardProps) {
       }}
     >
       {/* Top left */}
-      <div className={`flex flex-col items-center pt-0.5 pl-1 ${fontSize} leading-none`}>
+      <div className={`flex flex-col items-center pt-1 pl-1.5 ${fontSize} leading-none`}>
         <span className="font-black" style={{ color: suitColors[card.suit] }}>{card.rank}</span>
-        <span style={{ color: suitColors[card.suit], fontSize: small ? '8px' : '10px' }}>{suitSymbols[card.suit]}</span>
+        <span style={{ color: suitColors[card.suit], fontSize: small ? '11px' : '14px' }}>{suitSymbols[card.suit]}</span>
       </div>
       {/* Center suit */}
       <div className="flex-1 flex items-center justify-center">
-        <span style={{ color: suitColors[card.suit], fontSize: small ? '14px' : '22px' }}>{suitSymbols[card.suit]}</span>
+        <span style={{ color: suitColors[card.suit], fontSize: small ? '26px' : '38px' }}>{suitSymbols[card.suit]}</span>
       </div>
       {/* Bottom right */}
-      <div className={`flex flex-col items-center pb-0.5 pr-1 self-end ${fontSize} leading-none rotate-180`}>
+      <div className={`flex flex-col items-center pb-1 pr-1.5 self-end ${fontSize} leading-none rotate-180`}>
         <span className="font-black" style={{ color: suitColors[card.suit] }}>{card.rank}</span>
-        <span style={{ color: suitColors[card.suit], fontSize: small ? '8px' : '10px' }}>{suitSymbols[card.suit]}</span>
+        <span style={{ color: suitColors[card.suit], fontSize: small ? '11px' : '14px' }}>{suitSymbols[card.suit]}</span>
       </div>
     </motion.div>
   );
