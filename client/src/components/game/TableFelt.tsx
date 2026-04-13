@@ -1,23 +1,26 @@
 /**
- * TableFelt — top-down SVG of a real Free Bet Blackjack table.
+ * TableFelt — SVG replica of the green Free Bet Blackjack table from the reference photo.
  *
- * Matches the reference photo of a black-felt Free Bet table:
- *   - Black felt with subtle radial vignette
- *   - Top arc: "Dealer Must Hit Soft 17 And Push 22" in cream serif caps
- *   - Large bold "INSURANCE" title in gold under the arc
- *   - "PAYS 2 TO 1" smaller gold text below INSURANCE
- *   - Thin gold dashed insurance arc sweeping over the bet spots
- *   - 5 gold bet spots in a semicircle, each engraved "Push 22"
- *   - Semicircular chip rack at the dealer position (top)
- *   - Outer gold rail at the front
+ * Features:
+ *   - Dark green felt with radial vignette
+ *   - Gold banner arc: "Dealer Must Hit Soft 17 And Will Push With a Total of 22"
+ *   - BLACKJACK PAYS 3 TO 2 on the banner
+ *   - INSURANCE curved text with PAYS 2 TO 1
+ *   - 5 gold rectangular bet pads in semicircle
+ *   - POT OF GOLD medallions next to each bet pad
+ *   - FREE DOUBLES / FREE SPLITS text in center
+ *   - POT OF GOLD PAYTABLE on both sides
+ *   - Chip rack at top
+ *   - Black leather rail around edge
  */
 export default function TableFelt() {
-  const seatPositions: Array<{ x: number; y: number }> = [
-    { x: 130, y: 425 },
-    { x: 275, y: 380 },
-    { x: 400, y: 365 },
-    { x: 525, y: 380 },
-    { x: 670, y: 425 },
+  // Bet pad positions (center of each gold rectangle)
+  const pads: Array<{ x: number; y: number; rot: number }> = [
+    { x: 115, y: 370, rot: 25 },
+    { x: 255, y: 310, rot: 12 },
+    { x: 400, y: 285, rot: 0 },
+    { x: 545, y: 310, rot: -12 },
+    { x: 685, y: 370, rot: -25 },
   ];
 
   return (
@@ -28,225 +31,186 @@ export default function TableFelt() {
       xmlns="http://www.w3.org/2000/svg"
     >
       <defs>
-        {/* Black felt with subtle warm-ish brown undertone (like a worn real table) */}
-        <radialGradient id="feltBg" cx="50%" cy="42%" r="80%">
-          <stop offset="0%" stopColor="#1a1510" />
-          <stop offset="55%" stopColor="#0c0a08" />
-          <stop offset="100%" stopColor="#020202" />
+        <radialGradient id="feltBg" cx="50%" cy="35%" r="70%">
+          <stop offset="0%" stopColor="#1a6b3a" />
+          <stop offset="40%" stopColor="#125a2e" />
+          <stop offset="80%" stopColor="#0a4520" />
+          <stop offset="100%" stopColor="#063418" />
         </radialGradient>
-
-        {/* Cream/ivory for the top arc and body copy */}
-        <linearGradient id="creamText" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#f5ead0" />
-          <stop offset="100%" stopColor="#d9c896" />
+        <linearGradient id="goldGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#f0d060" />
+          <stop offset="40%" stopColor="#c9a030" />
+          <stop offset="100%" stopColor="#8a6a18" />
         </linearGradient>
-
-        {/* Warm gold gradient for the INSURANCE title and bet spots */}
-        <linearGradient id="goldText" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#f8d878" />
-          <stop offset="50%" stopColor="#e5b94a" />
-          <stop offset="100%" stopColor="#8c6316" />
+        <linearGradient id="bannerGold" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#e8c858" />
+          <stop offset="30%" stopColor="#d4aa38" />
+          <stop offset="70%" stopColor="#b8922a" />
+          <stop offset="100%" stopColor="#8a6a18" />
         </linearGradient>
-
-        {/* Outer gold rail */}
-        <linearGradient id="goldRail" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#f7d36b" />
-          <stop offset="50%" stopColor="#b8862a" />
-          <stop offset="100%" stopColor="#6e4d12" />
+        <linearGradient id="padGold" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#d4b048" />
+          <stop offset="50%" stopColor="#c49a30" />
+          <stop offset="100%" stopColor="#a07820" />
         </linearGradient>
-
-        {/* Very subtle noise / weave */}
-        <pattern id="feltNoise" x="0" y="0" width="4" height="4" patternUnits="userSpaceOnUse">
-          <rect width="4" height="4" fill="transparent" />
-          <circle cx="0.5" cy="0.5" r="0.25" fill="rgba(255,255,255,0.018)" />
-          <circle cx="2.5" cy="2.5" r="0.25" fill="rgba(255,255,255,0.012)" />
+        <linearGradient id="leatherRail" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#2a2a2a" />
+          <stop offset="50%" stopColor="#1a1a1a" />
+          <stop offset="100%" stopColor="#0a0a0a" />
+        </linearGradient>
+        <path id="topArc" d="M 100,130 Q 400,50 700,130" />
+        <path id="insuranceArc" d="M 100,195 Q 400,145 700,195" />
+        <pattern id="feltWeave" width="3" height="3" patternUnits="userSpaceOnUse">
+          <rect width="3" height="3" fill="transparent" />
+          <circle cx="1.5" cy="1.5" r="0.3" fill="rgba(0,0,0,0.04)" />
         </pattern>
-
-        {/* Bet spot radial — faint gold inner glow */}
-        <radialGradient id="betSpot" cx="50%" cy="50%" r="60%">
-          <stop offset="0%" stopColor="rgba(245,210,122,0.14)" />
-          <stop offset="80%" stopColor="rgba(245,210,122,0.03)" />
-          <stop offset="100%" stopColor="rgba(245,210,122,0)" />
-        </radialGradient>
-
-        {/* Curved paths for textPath */}
-        <path id="topArcPath" d="M 80,150 Q 400,30 720,150" />
-        <path id="insuranceArcPath" d="M 90,310 Q 400,230 710,310" />
       </defs>
 
-      {/* === Background === */}
-      <rect width="800" height="600" fill="url(#feltBg)" />
-      <rect width="800" height="600" fill="url(#feltNoise)" />
+      {/* === Black leather rail (outer border) === */}
+      <path d="M 0,600 L 0,140 Q 400,20 800,140 L 800,600 Z" fill="url(#leatherRail)" />
+      <path d="M 0,600 L 0,140 Q 400,20 800,140 L 800,600 Z" fill="none" stroke="#444" strokeWidth="1" />
 
-      {/* === Outer gold rail (front curved edge) === */}
-      <path
-        d="M 0,600 L 0,170 Q 400,40 800,170 L 800,600 Z"
-        fill="none"
-        stroke="url(#goldRail)"
-        strokeWidth="6"
-      />
-      <path
-        d="M 12,600 L 12,178 Q 400,52 788,178 L 788,600"
-        fill="none"
-        stroke="rgba(245,210,122,0.22)"
-        strokeWidth="1"
-      />
+      {/* === Green felt area (inside the rail) === */}
+      <path d="M 14,596 L 14,148 Q 400,34 786,148 L 786,596 Z" fill="url(#feltBg)" />
+      <path d="M 14,596 L 14,148 Q 400,34 786,148 L 786,596 Z" fill="url(#feltWeave)" />
 
-      {/* === Semicircular chip rack at top center (dealer position) === */}
-      <g transform="translate(400, 90)">
-        <path
-          d="M -150,0 A 150,36 0 0 1 150,0"
-          fill="rgba(0,0,0,0.7)"
-          stroke="url(#goldRail)"
-          strokeWidth="1.4"
-        />
-        {/* Chip slots with colored chips */}
-        {Array.from({ length: 9 }).map((_, i) => {
-          const t = (i / 8) * Math.PI;
-          const cx = Math.cos(Math.PI - t) * 128;
-          const cy = -Math.sin(t) * 14;
-          const colors = ['#cf2a2a', '#1f7a3a', '#2b6dbf', '#111', '#cf2a2a', '#e8c158', '#1f7a3a', '#2b6dbf', '#111'];
+      {/* === Inner gold trim line === */}
+      <path d="M 22,592 L 22,154 Q 400,42 778,154 L 778,592" fill="none" stroke="rgba(200,168,60,0.25)" strokeWidth="1.2" />
+
+      {/* === Chip rack at top === */}
+      <g transform="translate(400, 72)">
+        <path d="M -120,0 A 120,28 0 0 1 120,0" fill="rgba(0,0,0,0.6)" stroke="#555" strokeWidth="1" />
+        {Array.from({ length: 7 }).map((_, i) => {
+          const t = (i / 6) * Math.PI;
+          const cx = Math.cos(Math.PI - t) * 100;
+          const cy = -Math.sin(t) * 12;
+          const colors = ['#cf2a2a', '#1f7a3a', '#2b6dbf', '#111', '#cf2a2a', '#e8c158', '#9b59b6'];
           return (
             <g key={i}>
-              <ellipse
-                cx={cx}
-                cy={cy}
-                rx="10"
-                ry="3.6"
-                fill={colors[i]}
-                stroke="rgba(255,255,255,0.4)"
-                strokeWidth="0.4"
-              />
-              <ellipse
-                cx={cx}
-                cy={cy - 0.8}
-                rx="10"
-                ry="3.2"
-                fill="none"
-                stroke="rgba(0,0,0,0.4)"
-                strokeWidth="0.5"
-              />
+              <ellipse cx={cx} cy={cy} rx="9" ry="3.2" fill={colors[i]} stroke="rgba(255,255,255,0.3)" strokeWidth="0.4" />
+              <ellipse cx={cx} cy={cy - 2} rx="9" ry="3.2" fill={colors[i]} stroke="rgba(255,255,255,0.2)" strokeWidth="0.3" opacity="0.7" />
             </g>
           );
         })}
       </g>
 
-      {/* === Curved top text: Dealer Must Hit Soft 17 And Push 22 === */}
-      <text
-        fill="url(#creamText)"
-        fontFamily="'Cinzel','Trajan Pro','Times New Roman',serif"
-        fontSize="22"
-        fontWeight="600"
-        letterSpacing="3"
-        fontStyle="italic"
-      >
-        <textPath href="#topArcPath" textAnchor="middle" startOffset="50%">
-          Dealer Must Hit Soft 17 And Push 22
+      {/* === Gold banner arc === */}
+      <path d="M 80,140 Q 400,72 720,140 L 700,148 Q 400,84 100,148 Z" fill="url(#bannerGold)" stroke="#8a6a18" strokeWidth="0.5" />
+      {/* Banner shadow */}
+      <path d="M 100,148 Q 400,84 700,148" fill="none" stroke="rgba(0,0,0,0.3)" strokeWidth="2" />
+
+      {/* Banner text */}
+      <text fill="#3a2510" fontFamily="'Times New Roman',serif" fontSize="10" fontWeight="bold" letterSpacing="0.5">
+        <textPath href="#topArc" textAnchor="middle" startOffset="50%">
+          Dealer Must Hit Soft 17 And Will Push With a Total of 22
         </textPath>
       </text>
 
-      {/* === Big bold INSURANCE title === */}
-      <text
-        x="400"
-        y="215"
-        fill="url(#goldText)"
-        fontFamily="'Cinzel','Trajan Pro','Times New Roman',serif"
-        fontSize="54"
-        fontWeight="900"
-        textAnchor="middle"
-        letterSpacing="6"
-        style={{ filter: 'drop-shadow(0 2px 3px rgba(0,0,0,0.9))' }}
-      >
-        INSURANCE
+      {/* BLACKJACK PAYS 3 TO 2 - on the banner */}
+      <text x="400" y="120" fill="#3a2510" fontFamily="'Times New Roman',serif" fontSize="8" fontWeight="bold" textAnchor="middle" letterSpacing="1">
+        BLACKJACK PAYS 3 TO 2
       </text>
 
-      {/* === PAYS 2 TO 1 subtitle === */}
-      <text
-        x="400"
-        y="245"
-        fill="url(#goldText)"
-        fontFamily="'Cinzel','Trajan Pro','Times New Roman',serif"
-        fontSize="19"
-        fontWeight="700"
-        textAnchor="middle"
-        letterSpacing="5"
-      >
-        PAYS 2 TO 1
+      {/* === PAYS 2 TO 1 - Left === */}
+      <g transform="translate(60, 165)">
+        <text x="0" y="0" fill="url(#goldGrad)" fontFamily="'Times New Roman',serif" fontSize="9" fontWeight="bold" textAnchor="middle">PAYS</text>
+        <text x="0" y="16" fill="url(#goldGrad)" fontFamily="'Times New Roman',serif" fontSize="16" fontWeight="bold" textAnchor="middle">2 TO 1</text>
+      </g>
+
+      {/* === PAYS 2 TO 1 - Right === */}
+      <g transform="translate(740, 165)">
+        <text x="0" y="0" fill="url(#goldGrad)" fontFamily="'Times New Roman',serif" fontSize="9" fontWeight="bold" textAnchor="middle">PAYS</text>
+        <text x="0" y="16" fill="url(#goldGrad)" fontFamily="'Times New Roman',serif" fontSize="16" fontWeight="bold" textAnchor="middle">2 TO 1</text>
+      </g>
+
+      {/* === INSURANCE curved text === */}
+      <text fill="url(#goldGrad)" fontFamily="'Times New Roman',serif" fontSize="24" fontWeight="bold" letterSpacing="4">
+        <textPath href="#insuranceArc" textAnchor="middle" startOffset="50%">
+          INSURANCE
+        </textPath>
       </text>
 
-      {/* === Curved insurance dashed arc over the bet spots === */}
-      <path
-        d="M 85,305 Q 400,225 715,305"
-        fill="none"
-        stroke="rgba(245,210,122,0.6)"
-        strokeWidth="1.6"
-        strokeDasharray="7,5"
-      />
-      <path
-        d="M 85,308 Q 400,228 715,308"
-        fill="none"
-        stroke="rgba(245,210,122,0.25)"
-        strokeWidth="0.8"
-      />
+      {/* Insurance dashed arc */}
+      <path d="M 80,220 Q 400,170 720,220" fill="none" stroke="rgba(200,168,60,0.5)" strokeWidth="1.2" strokeDasharray="6,4" />
 
-      {/* === BET SPOTS === */}
-      {seatPositions.map((p, i) => (
-        <g key={i} transform={`translate(${p.x}, ${p.y})`}>
-          {/* Soft gold glow */}
-          <circle cx="0" cy="0" r="46" fill="url(#betSpot)" />
-          {/* Outer ring */}
-          <circle
-            cx="0"
-            cy="0"
-            r="38"
-            fill="none"
-            stroke="url(#goldText)"
-            strokeWidth="2.4"
-          />
-          {/* Inner thin ring */}
-          <circle
-            cx="0"
-            cy="0"
-            r="33"
-            fill="none"
-            stroke="rgba(245,210,122,0.35)"
-            strokeWidth="0.7"
-          />
-          {/* "Push 22" engraving — italic, matches the reference */}
-          <text
-            x="0"
-            y="4"
-            fill="url(#goldText)"
-            fontFamily="'Cinzel','Times New Roman',serif"
-            fontSize="13"
-            fontStyle="italic"
-            fontWeight="700"
-            textAnchor="middle"
-            letterSpacing="1.2"
-          >
-            Push 22
-          </text>
+      {/* === FREE DOUBLES & FREE SPLITS - Center text === */}
+      <g transform="translate(400, 250)">
+        <text x="-50" y="0" fill="url(#goldGrad)" fontFamily="'Times New Roman',serif" fontSize="12" fontWeight="bold" textAnchor="middle">FREE</text>
+        <text x="-50" y="13" fill="url(#goldGrad)" fontFamily="'Times New Roman',serif" fontSize="12" fontWeight="bold" textAnchor="middle">DOUBLES</text>
+        <text x="-50" y="24" fill="rgba(200,168,60,0.5)" fontFamily="'Times New Roman',serif" fontSize="6" textAnchor="middle">On Any Two-Card</text>
+        <text x="-50" y="31" fill="rgba(200,168,60,0.5)" fontFamily="'Times New Roman',serif" fontSize="6" textAnchor="middle">Hard Total of 9, 10 or 11</text>
+
+        <text x="50" y="0" fill="url(#goldGrad)" fontFamily="'Times New Roman',serif" fontSize="12" fontWeight="bold" textAnchor="middle">FREE</text>
+        <text x="50" y="13" fill="url(#goldGrad)" fontFamily="'Times New Roman',serif" fontSize="12" fontWeight="bold" textAnchor="middle">SPLITS</text>
+        <text x="50" y="24" fill="rgba(200,168,60,0.5)" fontFamily="'Times New Roman',serif" fontSize="6" textAnchor="middle">On All Pairs Except</text>
+        <text x="50" y="31" fill="rgba(200,168,60,0.5)" fontFamily="'Times New Roman',serif" fontSize="6" textAnchor="middle">10-Value Cards</text>
+      </g>
+
+      {/* === 5 Gold rectangular bet pads === */}
+      {pads.map((p, i) => (
+        <g key={i} transform={`translate(${p.x}, ${p.y}) rotate(${p.rot})`}>
+          {/* Gold pad with rounded corners */}
+          <rect x="-30" y="-22" width="60" height="44" rx="4" ry="4"
+            fill="url(#padGold)" stroke="#8a6a18" strokeWidth="1.2" opacity="0.85" />
+          {/* Inner border */}
+          <rect x="-26" y="-18" width="52" height="36" rx="3" ry="3"
+            fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="0.5" />
         </g>
       ))}
 
-      {/* === Corner flourishes (subtle, just a hint of trim) === */}
-      {[
-        { x: 40, y: 560, flip: 1 },
-        { x: 760, y: 560, flip: -1 },
-      ].map((f, i) => (
-        <g
-          key={i}
-          transform={`translate(${f.x}, ${f.y}) scale(${f.flip}, 1)`}
-          fill="none"
-          stroke="url(#goldText)"
-          strokeWidth="1"
-          opacity="0.55"
-        >
-          <path d="M 0,0 C 8,-12 22,-14 28,-4 C 22,-8 12,-6 6,2 Z" />
-          <path d="M 4,-2 C 14,-18 30,-18 32,-6" />
-          <circle cx="20" cy="-10" r="1.2" fill="url(#goldText)" stroke="none" />
-        </g>
-      ))}
+      {/* === POT OF GOLD medallions === */}
+      {pads.map((p, i) => {
+        const offsetX = p.rot > 0 ? 48 : p.rot < 0 ? -48 : 0;
+        const offsetY = p.rot === 0 ? 40 : 35;
+        return (
+          <g key={`pog-${i}`} transform={`translate(${p.x + offsetX}, ${p.y + offsetY})`}>
+            <circle cx="0" cy="0" r="14" fill="#6B4F10" stroke="#d4af37" strokeWidth="1" />
+            <text x="0" y="-2" fill="#ffd700" fontFamily="'Times New Roman',serif" fontSize="4" fontWeight="bold" textAnchor="middle">POT OF</text>
+            <text x="0" y="5" fill="#ffd700" fontFamily="'Times New Roman',serif" fontSize="5" fontWeight="bold" textAnchor="middle">GOLD</text>
+          </g>
+        );
+      })}
+
+      {/* === POT OF GOLD PAYTABLE - Left side === */}
+      <g transform="translate(55, 430)">
+        <text x="0" y="0" fill="rgba(200,168,60,0.7)" fontFamily="'Times New Roman',serif" fontSize="7" fontWeight="bold" letterSpacing="0.5">POT OF GOLD PAYTABLE</text>
+        <text x="0" y="10" fill="rgba(200,168,60,0.5)" fontFamily="'Times New Roman',serif" fontSize="5.5" fontWeight="bold">FREE BETS</text>
+        <text x="85" y="10" fill="rgba(200,168,60,0.5)" fontFamily="'Times New Roman',serif" fontSize="5.5" fontWeight="bold">POT OF GOLD</text>
+        {[['7', '100 to 1'], ['6', '100 to 1'], ['5', '100 to 1'], ['4', '50 to 1'], ['3', '30 to 1'], ['2', '12 to 1'], ['1', '3 to 1']].map(([n, p], j) => (
+          <g key={j}>
+            <text x="6" y={22 + j * 10} fill="rgba(200,168,60,0.45)" fontFamily="'Times New Roman',serif" fontSize="6">{n}</text>
+            <line x1="14" y1={19 + j * 10} x2="78" y2={19 + j * 10} stroke="rgba(200,168,60,0.15)" strokeWidth="0.5" strokeDasharray="2,2" />
+            <text x="80" y={22 + j * 10} fill="rgba(200,168,60,0.45)" fontFamily="'Times New Roman',serif" fontSize="6">{p}</text>
+          </g>
+        ))}
+      </g>
+
+      {/* === POT OF GOLD PAYTABLE - Right side === */}
+      <g transform="translate(615, 430)">
+        <text x="0" y="0" fill="rgba(200,168,60,0.7)" fontFamily="'Times New Roman',serif" fontSize="7" fontWeight="bold" letterSpacing="0.5">POT OF GOLD PAYTABLE</text>
+        <text x="0" y="10" fill="rgba(200,168,60,0.5)" fontFamily="'Times New Roman',serif" fontSize="5.5" fontWeight="bold">FREE BETS</text>
+        <text x="85" y="10" fill="rgba(200,168,60,0.5)" fontFamily="'Times New Roman',serif" fontSize="5.5" fontWeight="bold">POT OF GOLD</text>
+        {[['7', '100 to 1'], ['6', '100 to 1'], ['5', '100 to 1'], ['4', '50 to 1'], ['3', '30 to 1'], ['2', '12 to 1'], ['1', '3 to 1']].map(([n, p], j) => (
+          <g key={j}>
+            <text x="6" y={22 + j * 10} fill="rgba(200,168,60,0.45)" fontFamily="'Times New Roman',serif" fontSize="6">{n}</text>
+            <line x1="14" y1={19 + j * 10} x2="78" y2={19 + j * 10} stroke="rgba(200,168,60,0.15)" strokeWidth="0.5" strokeDasharray="2,2" />
+            <text x="80" y={22 + j * 10} fill="rgba(200,168,60,0.45)" fontFamily="'Times New Roman',serif" fontSize="6">{p}</text>
+          </g>
+        ))}
+      </g>
+
+      {/* === FREE DOUBLES / FREE SPLITS text (bottom center) === */}
+      <g transform="translate(400, 470)">
+        <text x="-55" y="0" fill="url(#goldGrad)" fontFamily="'Times New Roman',serif" fontSize="13" fontWeight="bold" textAnchor="middle">FREE</text>
+        <text x="-55" y="15" fill="url(#goldGrad)" fontFamily="'Times New Roman',serif" fontSize="13" fontWeight="bold" textAnchor="middle">DOUBLES</text>
+        <text x="-55" y="26" fill="rgba(200,168,60,0.5)" fontFamily="'Times New Roman',serif" fontSize="7" textAnchor="middle">On Any Two-Card</text>
+        <text x="-55" y="34" fill="rgba(200,168,60,0.5)" fontFamily="'Times New Roman',serif" fontSize="7" textAnchor="middle">Hard Total of 9, 10 or 11</text>
+
+        <text x="55" y="0" fill="url(#goldGrad)" fontFamily="'Times New Roman',serif" fontSize="13" fontWeight="bold" textAnchor="middle">FREE</text>
+        <text x="55" y="15" fill="url(#goldGrad)" fontFamily="'Times New Roman',serif" fontSize="13" fontWeight="bold" textAnchor="middle">SPLITS</text>
+        <text x="55" y="26" fill="rgba(200,168,60,0.5)" fontFamily="'Times New Roman',serif" fontSize="7" textAnchor="middle">On All Pairs Except</text>
+        <text x="55" y="34" fill="rgba(200,168,60,0.5)" fontFamily="'Times New Roman',serif" fontSize="7" textAnchor="middle">10-Value Cards</text>
+      </g>
     </svg>
   );
 }
