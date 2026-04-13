@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useGameStore } from '../stores/gameStore';
 import { useAuthStore } from '../stores/authStore';
@@ -11,12 +11,14 @@ export default function GamePage() {
   const { roomId: inviteCode } = useParams<{ roomId: string }>();
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
+  const userRef = useRef(user);
+  userRef.current = user;
   const { setRoom, setSeats, updateSeat, setGameState, setAvailableActions, setMySeatIndex, reset } = useGameStore();
   const [connected, setConnected] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (!inviteCode || !user) return;
+    if (!inviteCode || !userRef.current) return;
 
     let socket: any = null;
     let cancelled = false;
@@ -58,7 +60,7 @@ export default function GamePage() {
       setRoom(state.id, state.inviteCode, state.name);
       setSeats(state.seats);
       setGameState(state.gameState);
-      const myIdx = state.seats.findIndex((s) => s?.userId === user.id);
+      const myIdx = state.seats.findIndex((s) => s?.userId === userRef.current?.id);
       setMySeatIndex(myIdx >= 0 ? myIdx : null);
     });
 
@@ -75,7 +77,7 @@ export default function GamePage() {
         currentBet: 0,
       };
       updateSeat(data.seatIndex, seat);
-      if (data.userId === user.id) {
+      if (data.userId === userRef.current?.id) {
         setMySeatIndex(data.seatIndex);
       }
     });
@@ -83,7 +85,7 @@ export default function GamePage() {
     // Player unseated
     socket.on(S2C.PLAYER_UNSEATED, (data: { seatIndex: number }) => {
       const currentSeat = useGameStore.getState().seats[data.seatIndex];
-      if (currentSeat?.userId === user.id) {
+      if (currentSeat?.userId === userRef.current?.id) {
         setMySeatIndex(null);
       }
       updateSeat(data.seatIndex, null);
@@ -257,7 +259,7 @@ export default function GamePage() {
       disconnectSocket();
       reset();
     };
-  }, [inviteCode, user]);
+  }, [inviteCode]);
 
   if (error) {
     return (
