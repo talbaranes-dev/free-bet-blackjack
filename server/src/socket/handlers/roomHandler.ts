@@ -21,6 +21,9 @@ const rooms = new Map<
   }
 >();
 
+// Grace period timers for disconnects - don't remove player immediately
+const disconnectTimers = new Map<string, NodeJS.Timeout>();
+
 export function getRooms() {
   return rooms;
 }
@@ -52,6 +55,15 @@ export function setupRoomHandler(io: Server, socket: AuthSocket) {
         rooms.set(inviteCode, room);
       }
 
+      // Cancel any pending disconnect timer for this user
+      const timerKey = `${userId}:${inviteCode}`;
+      const existingTimer = disconnectTimers.get(timerKey);
+      if (existingTimer) {
+        clearTimeout(existingTimer);
+        disconnectTimers.delete(timerKey);
+        console.log(`[ROOM] Cancelled disconnect timer for ${userId} - reconnected`);
+      }
+
       // Join Socket.IO room
       socket.join(`room:${inviteCode}`);
       (socket as any).currentRoom = inviteCode;
@@ -60,6 +72,7 @@ export function setupRoomHandler(io: Server, socket: AuthSocket) {
       const existingSeat = room.seats.find((s) => s?.userId === userId);
       if (existingSeat) {
         existingSeat.socketId = socket.id;
+        console.log(`[ROOM] User ${userId} reconnected to seat`);
       }
 
       // Get user data
@@ -164,7 +177,6 @@ export function setupRoomHandler(io: Server, socket: AuthSocket) {
     // Check if all seated players are ready (min 1)
     const seatedPlayers = room.seats.filter((s) => s !== null);
     if (seatedPlayers.length > 0 && seatedPlayers.every((s) => s!.isReady)) {
-      // Start game
       if (!room.gameManager) {
         room.gameManager = new GameManager(io, inviteCode, room);
       }
@@ -172,22 +184,56 @@ export function setupRoomHandler(io: Server, socket: AuthSocket) {
     }
   });
 
-  // LEAVE ROOM
+  // LEAVE ROOM - explicit leave (user clicked Leave)
   socket.on(C2S.LEAVE_ROOM, () => {
-    handleLeave(io, socket, userId);
+    handleLeave(io, socket, userId, false); // immediate leave
   });
 
+  // DISCONNECT - socket dropped (might be temporary)
   socket.on('disconnect', () => {
-    handleLeave(io, socket, userId);
+    const inviteCode = (socket as any).currentRoom;
+    if (!inviteCode) return;
+
+    const room = rooms.get(inviteCode);
+    if (!room) return;
+
+    const seatIdx = room.seats.findIndex((s) => s?.userId === userId);
+
+    // If player is seated, give them 15 seconds to reconnect before removing
+    if (seatIdx >= 0) {
+      const timerKey = `${userId}:${inviteCode}`;
+      console.log(`[ROOM] User ${userId} disconnected - starting 15s grace period`);
+
+      const timer = setTimeout(() => {
+        console.log(`[ROOM] Grace period expired for ${userId} - removing from seat`);
+        disconnectTimers.delete(timerKey);
+        handleLeave(io, socket, userId, true);
+      }, 15000);
+
+      disconnectTimers.set(timerKey, timer);
+    } else {
+      // Not seated, just remove from room
+      socket.leave(`room:${inviteCode}`);
+      io.to(`room:${inviteCode}`).emit(S2C.PLAYER_LEFT, { userId });
+      (socket as any).currentRoom = null;
+    }
   });
 }
 
-function handleLeave(io: Server, socket: AuthSocket, userId: string) {
+function handleLeave(io: Server, socket: AuthSocket, userId: string, fromDisconnect: boolean) {
   const inviteCode = (socket as any).currentRoom;
   if (!inviteCode) return;
 
   const room = rooms.get(inviteCode);
   if (!room) return;
+
+  // Cancel any pending timer
+  const timerKey = `${userId}:${inviteCode}`;
+  const timer = disconnectTimers.get(timerKey);
+  if (timer) {
+    clearTimeout(timer);
+    disconnectTimers.delete(timerKey);
+  }
 
   // Remove from seat
   const seatIdx = room.seats.findIndex((s) => s?.userId === userId);
@@ -196,7 +242,9 @@ function handleLeave(io: Server, socket: AuthSocket, userId: string) {
     io.to(`room:${inviteCode}`).emit(S2C.PLAYER_UNSEATED, { seatIndex: seatIdx });
   }
 
-  socket.leave(`room:${inviteCode}`);
+  if (!fromDisconnect) {
+    socket.leave(`room:${inviteCode}`);
+  }
   io.to(`room:${inviteCode}`).emit(S2C.PLAYER_LEFT, { userId });
 
   // Clean up empty rooms

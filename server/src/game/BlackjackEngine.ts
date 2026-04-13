@@ -518,7 +518,10 @@ export class BlackjackEngine {
         });
       }
 
-      // Calculate chip change (payout minus total money wagered)
+      // Calculate chip change: payout minus what the player actually wagered
+      // player.bet = original stake placed during betting
+      // For splits/doubles, the player may have wagered more (paid splits/doubles)
+      // But free bets don't cost the player anything extra
       const chipChange = totalPayout - player.bet;
       player.chips += chipChange;
       playerResults.set(player.seatIndex, { chipChange, newTotal: player.chips });

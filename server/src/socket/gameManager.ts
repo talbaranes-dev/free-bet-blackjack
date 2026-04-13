@@ -20,6 +20,7 @@ export class GameManager {
   private roundNumber: number = 0;
   private turnTimeout: NodeJS.Timeout | null = null;
   private bettingTimeout: NodeJS.Timeout | null = null;
+  private processingAction: boolean = false; // Lock to prevent double actions
 
   constructor(io: Server, roomKey: string, room: RoomData) {
     this.io = io;
@@ -47,6 +48,7 @@ export class GameManager {
   startBetting() {
     this.roundNumber++;
     this.engine = new BlackjackEngine(this.roundNumber);
+    this.processingAction = false;
 
     this.io.to(`room:${this.roomKey}`).emit(S2C.BETTING_OPEN, {
       minBet: this.room.minBet,
@@ -54,7 +56,6 @@ export class GameManager {
       timeRemaining: 15,
     });
 
-    // Auto-deal after 15 seconds
     this.bettingTimeout = setTimeout(() => {
       this.deal();
     }, 15000);
@@ -71,7 +72,6 @@ export class GameManager {
     if (success) {
       this.io.to(`room:${this.roomKey}`).emit(S2C.BET_PLACED, { seatIndex: seatIdx, amount });
 
-      // Check if all seated players have bet
       const seatedCount = this.room.seats.filter((s) => s !== null).length;
       const betCount = this.engine.getState().players.size;
       if (betCount >= seatedCount) {
@@ -93,6 +93,12 @@ export class GameManager {
   }
 
   processAction(userId: string, action: PlayerAction): boolean {
+    // LOCK: prevent processing multiple actions simultaneously
+    if (this.processingAction) {
+      console.log(`[GM] Action rejected - already processing`);
+      return false;
+    }
+
     const seatIdx = this.room.seats.findIndex((s) => s?.userId === userId);
     if (seatIdx < 0) return false;
 
@@ -101,9 +107,12 @@ export class GameManager {
       this.turnTimeout = null;
     }
 
+    this.processingAction = true;
     const success = this.engine.processAction(seatIdx, action);
     if (success) {
       this.processEvents();
+    } else {
+      this.processingAction = false;
     }
     return success;
   }
@@ -112,36 +121,40 @@ export class GameManager {
     const events = this.engine.flushEvents();
 
     for (const event of events) {
-      this.broadcastEvent(event);
-
-      // Add delays for dramatic effect - like a real casino
+      // Delay BEFORE certain events for dramatic effect
       switch (event.type) {
-        case 'CARDS_DEALT':
-          await this.delay(1500); // Pause after dealing
-          break;
-        case 'CARD_DRAWN':
-          await this.delay(600); // Brief pause after hit
-          break;
-        case 'HAND_DOUBLED':
+        case 'DEALER_REVEAL':
           await this.delay(800);
           break;
-        case 'HAND_BUSTED':
+        case 'DEALER_DRAW':
           await this.delay(1000);
           break;
-        case 'DEALER_REVEAL':
-          await this.delay(1200); // Dramatic reveal
+      }
+
+      this.broadcastEvent(event);
+
+      // Delay AFTER certain events
+      switch (event.type) {
+        case 'CARDS_DEALT':
+          await this.delay(1200);
           break;
-        case 'DEALER_DRAW':
-          await this.delay(1000); // Each dealer card
+        case 'CARD_DRAWN':
+          await this.delay(500);
+          break;
+        case 'HAND_DOUBLED':
+          await this.delay(700);
+          break;
+        case 'HAND_BUSTED':
+          await this.delay(1200);
           break;
         case 'HAND_RESULT':
-          await this.delay(800); // Show each result
-          break;
-        case 'ROUND_COMPLETE':
-          await this.delay(3000); // Show results for 3 seconds before next round
+          await this.delay(600);
           break;
       }
     }
+
+    // Unlock after all events processed
+    this.processingAction = false;
   }
 
   private delay(ms: number): Promise<void> {
@@ -152,21 +165,17 @@ export class GameManager {
     const roomChannel = `room:${this.roomKey}`;
 
     switch (event.type) {
-      case 'CARDS_DEALT':
-        // Send card data to players (hide face-down cards info)
+      case 'CARDS_DEALT': {
         const dealData: Record<number, any> = {};
         for (const [seat, player] of event.players) {
-          dealData[seat] = {
-            seatIndex: seat,
-            hands: player.hands,
-          };
+          dealData[seat] = { seatIndex: seat, hands: player.hands };
         }
         this.io.to(roomChannel).emit(S2C.CARDS_DEALT, {
           players: dealData,
           dealerHand: event.dealerHand,
         });
         break;
-
+      }
       case 'TURN_START':
         this.io.to(roomChannel).emit(S2C.TURN_START, {
           seatIndex: event.seatIndex,
@@ -174,7 +183,6 @@ export class GameManager {
           actions: event.actions,
           timeRemaining: event.timeRemaining,
         });
-        // Set auto-stand timeout
         this.turnTimeout = setTimeout(() => {
           this.engine.processAction(event.seatIndex, 'stand');
           this.processEvents();
@@ -253,7 +261,6 @@ export class GameManager {
         break;
 
       case 'ROUND_COMPLETE':
-        // Update DB and emit results
         this.handleRoundComplete(event.playerResults);
         break;
     }
@@ -265,7 +272,6 @@ export class GameManager {
     for (const [seatIdx, result] of results) {
       resultData[seatIdx] = result;
 
-      // Update user chips in DB
       const seat = this.room.seats[seatIdx];
       if (seat) {
         seat.chips = result.newTotal;
@@ -293,9 +299,9 @@ export class GameManager {
       if (seat) seat.isReady = false;
     }
 
-    // Auto-start next round after 5 seconds
+    // Auto-start next round after 4 seconds
     setTimeout(() => {
       this.startBetting();
-    }, 5000);
+    }, 4000);
   }
 }

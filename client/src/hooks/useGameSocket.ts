@@ -18,19 +18,26 @@ export function useGameSocket(inviteCode: string | undefined) {
     const token = useAuthStore.getState().accessToken;
     if (!user || !token) return;
 
-    // If already connected to this room, skip
-    if (gameSocket?.connected && currentRoom === inviteCode) {
+    // If already connected/connecting to this room, DO NOT reconnect
+    if (gameSocket && currentRoom === inviteCode) {
+      // Just make sure store shows connected if socket is connected
+      if (gameSocket.connected) {
+        useGameStore.setState({ connected: true });
+      }
       return;
     }
 
-    // If connected to different room, leave it
-    if (gameSocket) {
+    // If connected to a DIFFERENT room, leave it
+    if (gameSocket && currentRoom !== inviteCode) {
       if (currentRoom) gameSocket.emit(C2S.LEAVE_ROOM);
       gameSocket.removeAllListeners();
       gameSocket.disconnect();
       gameSocket = null;
       currentRoom = null;
     }
+
+    // If no socket exists, create one
+    if (gameSocket) return; // Already exists for this room
 
     const { setRoom, setSeats, updateSeat, setGameState, setAvailableActions, setMySeatIndex } = useGameStore.getState();
 
@@ -243,4 +250,30 @@ export function leaveGame() {
 
 export function getGameSocket(): Socket | null {
   return gameSocket;
+}
+
+// Send action and immediately disable buttons (optimistic)
+export function sendAction(action: string) {
+  if (gameSocket) {
+    useGameStore.getState().setAvailableActions(null); // Disable buttons immediately
+    gameSocket.emit(C2S.PLAYER_ACTION, { action });
+  }
+}
+
+export function sendBet(amount: number) {
+  if (gameSocket) {
+    gameSocket.emit(C2S.PLACE_BET, { amount });
+  }
+}
+
+export function sendTakeSeat(index: number) {
+  if (gameSocket) {
+    gameSocket.emit(C2S.TAKE_SEAT, { seatIndex: index });
+  }
+}
+
+export function sendReady() {
+  if (gameSocket) {
+    gameSocket.emit(C2S.READY_UP);
+  }
 }
