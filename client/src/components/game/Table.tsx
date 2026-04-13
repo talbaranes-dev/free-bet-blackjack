@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useGameStore } from '../../stores/gameStore';
 import { useAuthStore } from '../../stores/authStore';
-import { getSocket } from '../../services/socket';
+import { getGameSocket } from '../../hooks/useGameSocket';
 import { C2S } from '@shared/events';
 import type { PlayerAction } from '@shared/types';
 import TableFelt from './TableFelt';
@@ -28,21 +28,21 @@ export default function Table() {
   const user = useAuthStore((s) => s.user);
   const { seats, gameState, availableActions, mySeatIndex, inviteCode } = useGameStore();
   const mySeat = mySeatIndex !== null ? seats[mySeatIndex] : null;
-  const socket = getSocket();
+  const socket = getGameSocket();
 
   const takeSeat = useCallback(
-    (i: number) => socket.emit(C2S.TAKE_SEAT, { seatIndex: i }),
+    (i: number) => socket?.emit(C2S.TAKE_SEAT, { seatIndex: i }),
     [socket],
   );
   const placeBet = useCallback(
-    (amount: number) => socket.emit(C2S.PLACE_BET, { amount }),
+    (amount: number) => socket?.emit(C2S.PLACE_BET, { amount }),
     [socket],
   );
   const doAction = useCallback(
-    (action: PlayerAction) => socket.emit(C2S.PLAYER_ACTION, { action }),
+    (action: PlayerAction) => socket?.emit(C2S.PLAYER_ACTION, { action }),
     [socket],
   );
-  const readyUp = useCallback(() => socket.emit(C2S.READY_UP), [socket]);
+  const readyUp = useCallback(() => socket?.emit(C2S.READY_UP), [socket]);
 
   const isBetting = gameState?.status === 'BETTING';
   const isMyTurn =

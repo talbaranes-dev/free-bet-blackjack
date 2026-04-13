@@ -9,6 +9,8 @@ interface GameStoreState {
   gameState: GameState | null;
   availableActions: AvailableActions | null;
   mySeatIndex: number | null;
+  connected: boolean;
+  error: string | null;
 
   setRoom: (roomId: string, inviteCode: string, name: string) => void;
   setSeats: (seats: (PlayerSeat | null)[]) => void;
@@ -28,6 +30,8 @@ export const useGameStore = create<GameStoreState>((set) => ({
   gameState: null,
   availableActions: null,
   mySeatIndex: null,
+  connected: false,
+  error: null,
 
   setRoom: (roomId, inviteCode, name) => set({ roomId, inviteCode, roomName: name }),
 
@@ -67,5 +71,7 @@ export const useGameStore = create<GameStoreState>((set) => ({
       gameState: null,
       availableActions: null,
       mySeatIndex: null,
+      connected: false,
+      error: null,
     }),
 }));
