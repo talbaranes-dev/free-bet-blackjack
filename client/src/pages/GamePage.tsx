@@ -21,15 +21,26 @@ export default function GamePage() {
     const socket = connectSocket();
 
     socket.on('connect', () => {
+      console.log('[SOCKET] Connected');
       setConnected(true);
       socket.emit(C2S.JOIN_ROOM, { inviteCode });
     });
 
-    socket.on('disconnect', () => setConnected(false));
+    socket.on('disconnect', (reason) => {
+      console.log('[SOCKET] Disconnected:', reason);
+      // Don't set connected=false for temporary disconnects - socket will auto-reconnect
+      if (reason === 'io server disconnect') {
+        setConnected(false);
+      }
+    });
 
     socket.on('connect_error', (err) => {
-      console.error('Socket connect error:', err.message);
-      setError('Connection failed: ' + err.message);
+      console.error('[SOCKET] Connect error:', err.message);
+    });
+
+    // Log ALL incoming events for debugging
+    socket.onAny((event, ...args) => {
+      console.log('[SOCKET EVENT]', event, args);
     });
 
     // Full room state on join
