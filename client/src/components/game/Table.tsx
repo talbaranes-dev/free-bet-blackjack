@@ -13,14 +13,14 @@ import ActionButtons from './ActionButtons';
 import BetControls from './BetControls';
 
 // Seat positions (percentages) — match the SVG bet circles in TableFelt.
-// SVG bet spots are at: (130,360) (270,305) (400,285) (530,305) (670,360)
+// SVG bet spots are at: (130,425) (275,380) (400,365) (525,380) (670,425)
 // Percent of viewBox 800x600.
 const SEAT_POSITIONS = [
-  { left: '16.25%', top: '60%' },
-  { left: '33.75%', top: '50.8%' },
-  { left: '50%', top: '47.5%' },
-  { left: '66.25%', top: '50.8%' },
-  { left: '83.75%', top: '60%' },
+  { left: '16.25%', top: '70.8%' },
+  { left: '34.4%', top: '63.3%' },
+  { left: '50%', top: '60.8%' },
+  { left: '65.6%', top: '63.3%' },
+  { left: '83.75%', top: '70.8%' },
 ];
 
 export default function Table() {
@@ -103,10 +103,10 @@ export default function Table() {
           <TableFelt />
         </div>
 
-        {/* Dealer cards - top center */}
+        {/* Dealer cards - top center, sits in the chip rack area */}
         <div
           className="absolute z-10"
-          style={{ top: '14%', left: '50%', transform: 'translateX(-50%)' }}
+          style={{ top: '4%', left: '50%', transform: 'translateX(-50%) scale(0.85)' }}
         >
           {gameState && gameState.dealerHand.length > 0 ? (
             <DealerHand cards={gameState.dealerHand} value={gameState.dealerValue} />
@@ -122,16 +122,24 @@ export default function Table() {
           return (
             <div
               key={i}
-              className="absolute z-10 flex flex-col items-center -translate-x-1/2 -translate-y-1/2"
-              style={{ left: pos.left, top: pos.top }}
+              className="absolute z-10"
+              style={{ left: pos.left, top: pos.top, transform: 'translate(-50%, -50%)' }}
             >
-              {/* Cards above the avatar */}
+              {/* Cards anchored directly on the bet spot */}
               {seat && seat.hands.length > 0 && (
-                <div className={`mb-1 ${isMe ? '' : 'scale-90'}`}>
+                <div
+                  className={`absolute left-1/2 -translate-x-1/2 -top-2 ${isMe ? '' : 'scale-90'}`}
+                  style={{ zIndex: 2 }}
+                >
                   <Hand hand={seat.hands[0]} small={!isMe} />
                 </div>
               )}
 
+              {/* Avatar stack anchored BELOW the bet spot */}
+              <div
+                className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center"
+                style={{ top: '56px' }}
+              >
               {/* Avatar / take-seat button */}
               <motion.div
                 onClick={() => !seat && takeSeat(i)}
@@ -246,6 +254,7 @@ export default function Table() {
                   {seat.hands[0].result === 'LOSS' && `-${seat.hands[0].bet}`}
                 </motion.div>
               )}
+              </div>
             </div>
           );
         })}
