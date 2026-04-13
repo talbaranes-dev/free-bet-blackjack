@@ -98,10 +98,17 @@ export default function Table() {
       </div>
 
       {/* Table area with perspective tilt */}
-      <div className="flex-1 relative overflow-hidden">
-        <div className="absolute inset-0 felt-perspective">
-          <TableFelt />
-        </div>
+      <div className="flex-1 relative overflow-hidden flex items-center justify-center">
+        <div
+          className="relative w-full mx-auto"
+          style={{
+            maxWidth: 'min(100%, calc((100vh - 180px) * 1.333))',
+            aspectRatio: '4 / 3',
+          }}
+        >
+          <div className="absolute inset-0 felt-perspective">
+            <TableFelt />
+          </div>
 
         {/* Dealer cards - top center, sits in the chip rack area */}
         <div
@@ -295,6 +302,7 @@ export default function Table() {
             )}
           </div>
         )}
+        </div>
       </div>
 
       {/* Bottom controls */}

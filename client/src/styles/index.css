@@ -57,7 +57,7 @@ body {
 
 /* Felt perspective tilt for table */
 .felt-perspective {
-  transform: perspective(1400px) rotateX(14deg);
+  transform: perspective(1600px) rotateX(8deg);
   transform-origin: center 60%;
 }
 

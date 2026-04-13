@@ -24,7 +24,7 @@ export default function TableFelt() {
     <svg
       viewBox="0 0 800 600"
       className="absolute inset-0 w-full h-full"
-      preserveAspectRatio="xMidYMid slice"
+      preserveAspectRatio="xMidYMid meet"
       xmlns="http://www.w3.org/2000/svg"
     >
       <defs>
