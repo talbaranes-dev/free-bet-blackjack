@@ -31,10 +31,11 @@ export default function Card({ card, index = 0, small = false }: CardProps) {
         initial={{ rotateY: 180, opacity: 0, scale: 0.5 }}
         animate={{ rotateY: 0, opacity: 1, scale: 1 }}
         transition={{ delay: index * 0.15, duration: 0.4, type: 'spring' }}
-        className={`${w} rounded-md flex items-center justify-center shadow-xl border border-yellow-900/30`}
+        className={`${w} rounded-lg flex items-center justify-center border border-yellow-900/40`}
         style={{
           background: 'linear-gradient(135deg, #c41e3a 0%, #8b0000 50%, #c41e3a 100%)',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+          boxShadow:
+            '0 8px 18px rgba(0,0,0,0.55), 0 2px 4px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.15)',
         }}
       >
         <div className="w-3/4 h-3/4 rounded-sm border border-yellow-500/30 flex items-center justify-center"
@@ -51,10 +52,11 @@ export default function Card({ card, index = 0, small = false }: CardProps) {
       initial={{ rotateY: 180, opacity: 0, y: -30, scale: 0.5 }}
       animate={{ rotateY: 0, opacity: 1, y: 0, scale: 1 }}
       transition={{ delay: index * 0.15, duration: 0.4, type: 'spring' }}
-      className={`${w} rounded-md shadow-xl flex flex-col relative overflow-hidden`}
+      className={`${w} rounded-lg flex flex-col relative overflow-hidden`}
       style={{
-        background: 'linear-gradient(145deg, #ffffff 0%, #f0f0f0 100%)',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.8)',
+        background: 'linear-gradient(145deg, #ffffff 0%, #ececec 100%)',
+        boxShadow:
+          '0 10px 22px rgba(0,0,0,0.55), 0 2px 4px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.95)',
       }}
     >
       {/* Top left */}

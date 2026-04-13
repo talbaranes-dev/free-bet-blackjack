@@ -150,7 +150,7 @@ export default function GamePage() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-6" style={{ backgroundColor: '#0f0f23' }}>
+      <div className="min-h-screen flex flex-col items-center justify-center p-6" style={{ backgroundColor: '#0a0f1c' }}>
         <p className="text-red-400 mb-4">{error}</p>
         <button onClick={() => navigate('/lobby')} className="text-amber-400 underline">
           Back to Lobby
@@ -161,11 +161,44 @@ export default function GamePage() {
 
   if (!connected) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#0f0f23' }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#0a0f1c' }}>
         <p className="text-gray-400 animate-pulse">Connecting...</p>
       </div>
     );
   }
 
-  return <Table />;
+  return (
+    <div
+      className="h-screen w-screen flex flex-col overflow-hidden"
+      style={{
+        background:
+          'radial-gradient(ellipse at center top, #131c30 0%, #0a0f1c 60%, #05080f 100%)',
+      }}
+    >
+      {/* Fair Play Guaranteed banner */}
+      <div
+        className="w-full flex items-center justify-center py-1.5 z-30"
+        style={{
+          background:
+            'linear-gradient(180deg, #a32028 0%, #8b1a1f 50%, #5e1014 100%)',
+          borderBottom: '1px solid rgba(0,0,0,0.5)',
+          boxShadow: '0 2px 10px rgba(0,0,0,0.5)',
+        }}
+      >
+        <span
+          className="text-[12px] font-extrabold tracking-[0.18em]"
+          style={{
+            color: '#f5d27a',
+            textShadow: '0 1px 2px rgba(0,0,0,0.85)',
+          }}
+        >
+          ★ FAIR PLAY GUARANTEED ★
+        </span>
+      </div>
+
+      <div className="flex-1 relative">
+        <Table />
+      </div>
+    </div>
+  );
 }
